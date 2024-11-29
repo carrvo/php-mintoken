@@ -264,7 +264,7 @@ if ($method === 'GET') {
     }
     $me = filter_input_array(INPUT_GET, [
         'me' => FILTER_VALIDATE_URL,
-    ])
+    ]);
     if (!isset($me)) {
         invalidRequest();
     }
