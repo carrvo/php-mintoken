@@ -105,12 +105,17 @@ function revokeToken(string $token): void
     }
 }
 
-function getTrustedEndpoint(): string
+function getTrustedEndpoints(): array
 {
     $pdo = connectToDatabase();
-    $statement = $pdo->prepare('SELECT setting_value FROM settings WHERE setting_name = ? LIMIT 1');
+    $statement = $pdo->prepare('SELECT setting_value FROM settings WHERE setting_name = ?');
     $statement->execute(['endpoint']);
-    return $statement->fetchColumn();
+    $nextValue = $statement->fetchColumn();
+    while ($nextValue) {
+        $trusted[] = $nextValue;
+        $nextValue = $statement->fetchColumn();
+    }
+    return $trusted;
 }
 
 function verifyCode(string $code, string $client_id, string $redirect_uri, string $endpoint): ?array
@@ -221,8 +226,13 @@ if ($method === 'GET') {
     if (in_array(null, $request, true) || in_array(false, $request, true)) {
         invalidRequest();
     }
-    $endpoint = getTrustedEndpoint();
-    $info = verifyCode($request['code'], $request['client_id'], $request['redirect_uri'], $endpoint);
+    $endpoints = getTrustedEndpoints();
+    foreach ($endpoints as $endpoint) {
+        $info = verifyCode($request['code'], $request['client_id'], $request['redirect_uri'], $endpoint);
+        if ($info !== null) {
+            break;
+        }
+    }
     if ($info === null) {
         invalidRequest();
     }
