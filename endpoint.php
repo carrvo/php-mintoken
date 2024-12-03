@@ -254,14 +254,46 @@ if ($method === 'GET') {
         exit();
     }
     $revoke = filter_input(INPUT_POST, 'action', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^revoke$@']]);
+    $token = filter_input(INPUT_POST, 'token', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[0-9a-f]+_[0-9a-f]+$@']]);
+    // check if is POST+revoke request
     if (is_string($revoke)) {
-        $token = filter_input(INPUT_POST, 'token', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[0-9a-f]+_[0-9a-f]+$@']]);
         if (is_string($token)) {
             revokeToken($token);
         }
         header('HTTP/1.1 200 OK');
         exit();
     }
+    // check if is POST+introspection request
+    if (is_string($token)) {
+        // TODO: authorize resource server as per specification (see https://indieauth.spec.indieweb.org/#access-token-verification-response-p-1)
+        // meaning verify that the Basic user is the client_id, and ignore the Basic password
+        $tokenInfo = retrieveToken($token);
+        if (!isset($tokenInfo)) {
+            exit(json_encode([
+                'token_type' => 'Bearer',
+                'me' => '',
+                'sub' => '',
+                'client_id' => '',
+                'aud' => '',
+                'scope' => '',
+                'iat' => time(),
+                'exp' => time(),
+                'active' => false,
+            ]));
+        }
+        exit(json_encode([
+            'token_type' => 'Bearer',
+            'me' => $tokenInfo['auth_me'],
+            'sub' => $tokenInfo['auth_me'],
+            'client_id' => $tokenInfo['auth_client_id'],
+            'aud' => $tokenInfo['auth_client_id'],
+            'scope' => $tokenInfo['auth_scope'],
+            'iat' => strtotime($tokenInfo['created']),
+            'exp' => strtotime($tokenInfo['revoked']),
+            'active' => time() < strtotime($tokenInfo['revoked']),
+        ]));
+    }
+    // else is a POST+authorization request
     $request = array_merge(
         filter_input_array(INPUT_POST, [
             'grant_type' => [
