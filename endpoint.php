@@ -268,6 +268,8 @@ if ($method === 'GET') {
         // TODO: authorize resource server as per specification (see https://indieauth.spec.indieweb.org/#access-token-verification-response-p-1)
         // meaning verify that the Basic user is the client_id, and ignore the Basic password
         $tokenInfo = retrieveToken($token);
+        header('HTTP/1.1 200 OK');
+        header('Content-Type: application/json;charset=UTF-8');
         if ($tokenInfo === null || $tokenInfo['active'] === '0') {
             exit(json_encode([
                 'active' => false,
