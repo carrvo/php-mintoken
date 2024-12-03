@@ -278,9 +278,7 @@ if ($method === 'GET') {
         exit(json_encode([
             'token_type' => 'Bearer',
             'me' => $tokenInfo['auth_me'],
-            'sub' => $tokenInfo['auth_me'],
             'client_id' => $tokenInfo['auth_client_id'],
-            'aud' => $tokenInfo['auth_client_id'],
             'scope' => $tokenInfo['auth_scope'],
             'iat' => strtotime($tokenInfo['created']),
             'exp' => strtotime($tokenInfo['revoked']),
