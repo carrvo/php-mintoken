@@ -268,16 +268,8 @@ if ($method === 'GET') {
         // TODO: authorize resource server as per specification (see https://indieauth.spec.indieweb.org/#access-token-verification-response-p-1)
         // meaning verify that the Basic user is the client_id, and ignore the Basic password
         $tokenInfo = retrieveToken($token);
-        if (!isset($tokenInfo)) {
+        if ($tokenInfo === null || $tokenInfo['active'] === '0') {
             exit(json_encode([
-                'token_type' => 'Bearer',
-                'me' => '',
-                'sub' => '',
-                'client_id' => '',
-                'aud' => '',
-                'scope' => '',
-                'iat' => time(),
-                'exp' => time(),
                 'active' => false,
             ]));
         }
@@ -290,7 +282,7 @@ if ($method === 'GET') {
             'scope' => $tokenInfo['auth_scope'],
             'iat' => strtotime($tokenInfo['created']),
             'exp' => strtotime($tokenInfo['revoked']),
-            'active' => time() < strtotime($tokenInfo['revoked']),
+            'active' => true,
         ]));
     }
     // else is a POST+authorization request
