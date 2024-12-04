@@ -51,6 +51,60 @@ I do not have a need for a token endpoint like this myself, thus developing one 
    
    (The `href` must point at your `endpoint.php` file.)
 
+### Metadata Discovery
+Note that the use of `authorization_endpoint` and `token_endpoint` are deprecated but *SHOULD* be included for backwards compatibility.
+
+Instead the [spec supports a metadata discovery endpoint](https://indieauth.spec.indieweb.org/#discovery).
+
+Assuming the same configuration from above, the minimal metadata endpoint would look like
+```json
+{
+	"issuer": "https://example.com",
+	"authorization_endpoint": "https://example.com/auth/",
+	"token_endpoint": "https://example.com/auth/endpoint.php",
+	"introspection_endpoint": "https://example.com/auth/endpoint.php",
+	"code_challenge_methods_supported": ["S256"]
+}
+```
+And the full recommended metadata endpoint would look like
+```json
+{
+	"issuer": "https://example.com",
+	"authorization_endpoint": "https://example.com/auth/",
+	"token_endpoint": "https://example.com/auth/endpoint.php",
+	"introspection_endpoint": "https://example.com/auth/endpoint.php",
+	"response_types_supported": ["code"],
+	"response_modes_supported": ["query"],
+	"grant_types_supported": ["authorization_code"],
+	"introspection_endpoint_auth_methods_supported": ["client_secret_basic"],
+	"service_documentation": "https://indieauth.spec.indieweb.org/#discovery",
+	"code_challenge_methods_supported": ["S256"]
+}
+```
+
+## Endpoints
+
+### Authorize
+```curl
+curl --include -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'grant_type=authorization_code&code=<from SelfAuth submit>&redirect_uri=https%3A%2F%2Fexample.com%2Fclient%2Fredirect.php&client_id=https%3A%2F%2Fexample.com%2Fclient%2F&code_verifier=<value used to generate code_challenge>' 'https://example.com/auth/endpoint.php'
+```
+
+### Consume
+```curl
+curl --include --oauth2-bearer <token from authorize> https://example.com/selfauth/token.php
+```
+
+### Revoke
+```curl
+curl --include -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'action=revoke&token=<token from authorize>' https://example.com/selfauth/token.php
+```
+
+### Introspection
+```curl
+curl --include -u https://example.com/client/:_ -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'token=<token from authorize>' https://example.com/selfauth/token.php
+```
+Note that this endpoint requires a fixed password of `_`.
+
 ## License
 
 The BSD Zero Clause License (0BSD). Please see the LICENSE file for
