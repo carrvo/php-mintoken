@@ -279,7 +279,10 @@ if ($method === 'GET') {
         // Since we are working with URIs to identify, we need to handle
         // the pattern scheme://domain/path:password
         // To do this, we assume (and enforce) that the password is a single underscore (_).
-        if ($tokenInfo['auth_client_id'] . ':_' !== $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW']) {
+        $basicAuth = $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'];
+        $storedAuth = $tokenInfo['auth_client_id'] . ':_';
+        $storedAuthEncoded = urlencode($tokenInfo['auth_client_id']) . ':_';
+        if ($storedAuth !== $basicAuth && $storedAuthEncoded !== $basicAuth) {
             header('WWW-Authenticate: Basic');
             header('HTTP/1.0 401 Unauthorized');
             exit('Unauthorized');
