@@ -86,7 +86,7 @@ And the full recommended metadata endpoint would look like
 
 ### Authorize
 ```curl
-curl --include -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'grant_type=authorization_code&code=<from SelfAuth submit>&redirect_uri=https%3A%2F%2Fexample.com%2Fclient%2Fredirect.php&client_id=https%3A%2F%2Fexample.com%2Fclient%2F&code_verifier=<value used to generate code_challenge>' 'https://example.com/auth/endpoint.php'
+curl --include -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'grant_type=authorization_code&code=<from SelfAuth submit>&redirect_uri=https%3A%2F%2Fexample.com%2Fclient%2Fredirect.php&client_id=https%3A%2F%2Fexample.com%2Fclient%2F&code_verifier=<value used to generate code_challenge>' 'https://example.com/auth/endpoint.php?action=authorize'
 ```
 
 ### Consume
@@ -96,12 +96,12 @@ curl --include --oauth2-bearer <token from authorize> https://example.com/selfau
 
 ### Revoke
 ```curl
-curl --include -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'action=revoke&token=<token from authorize>' https://example.com/selfauth/token.php
+curl --include -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'token=<token from authorize>' https://example.com/selfauth/token.php?action=revoke
 ```
 
 ### Introspection
 ```curl
-curl --include -u https://example.com/client/:_ -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'token=<token from authorize>' https://example.com/selfauth/token.php
+curl --include -u https://example.com/client/:_ -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'token=<token from authorize>' https://example.com/selfauth/token.php?action=introspect
 ```
 Note that this endpoint requires a fixed password of `_`.
 

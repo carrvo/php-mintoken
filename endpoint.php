@@ -253,10 +253,13 @@ if ($method === 'GET') {
         header('HTTP/1.1 415 Unsupported Media Type');
         exit();
     }
-    $revoke = filter_input(INPUT_POST, 'action', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^revoke$@']]);
+    $action = filter_input(INPUT_GET, 'action', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^(revoke|introspect|authorize)$@']]);
     $token = filter_input(INPUT_POST, 'token', FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => '@^[0-9a-f]+_[0-9a-f]+$@']]);
+    if (!is_string($action)) {
+        invalidRequest();
+    }
     // check if is POST+revoke request
-    if (is_string($revoke)) {
+    if ($action === 'revoke') {
         if (is_string($token)) {
             revokeToken($token);
         }
@@ -264,7 +267,7 @@ if ($method === 'GET') {
         exit();
     }
     // check if is POST+introspection request
-    if (is_string($token)) {
+    if ($action === 'introspect') {
         $tokenInfo = retrieveToken($token);
         if ($tokenInfo === null || $tokenInfo['active'] === '0') {
             header('HTTP/1.1 200 OK');
